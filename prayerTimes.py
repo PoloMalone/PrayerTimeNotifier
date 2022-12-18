@@ -3,7 +3,9 @@ import pytz
 import requests
 from tkinter import *
 from tkinter import messagebox
+import time
 from time import sleep
+from win10toast import ToastNotifier
 
 
 def init():
@@ -48,26 +50,29 @@ def sleep_until_new_day():
     label_time_now = Label(root, text= "Time now: ")
     labels.append(label_time_now)
     label_time_now.pack()
-    deadline = "23:59:59"
+    deadline = "00:00:00"
     deadline_format = datetime.datetime.strptime(deadline, '%H:%M:%S')
-    while deadline_format < datetime.datetime.now(timezone).replace(tzinfo=None):
-        time_now = datetime.datetime.now(timezone)
-        remaining_time_twelve = str((deadline_format - time_now.replace(tzinfo=None)).total_seconds()).split(".")[0]
+    while True:
+        time_now = datetime.datetime.now(timezone).replace(tzinfo=None)
+        remaining_time_twelve = str((deadline_format - time_now).total_seconds()).split(".")[0]
         remaining_time_twelve = int(remaining_time_twelve)
-        rem_time_twelve.config(text=" Timeleft before 00:00 " + convert(remaining_time_twelve))
-        print(" Timeleft before 00:00:00 - " + convert(remaining_time_twelve), end="\r")
+        rem_time_twelve.config(text=" Timeleft before 00:00 - " + convert(remaining_time_twelve))
+        time_now_live(label_time_now)
         sleep(0.5)
         root.update()
+        stringed_time_now = time_now.strftime('%H:%M:%S')
+  
+        if stringed_time_now == deadline:
+            for label in labels: label.destroy()
+            break;
     init()
     return  
 
 
 def sleep_until_notif_time(notif_time, pray_name, idx):
     rem_time = Label(root, text=" Timeleft before notif time ")
-    notif_label = Label(root, text="")
     label_time_now = Label(root, text= "Time now: ")
     labels.append(rem_time)
-    labels.append(notif_label)
     labels.append(label_time_now)
     label_time_now.pack()
     rem_time.pack()
@@ -76,12 +81,11 @@ def sleep_until_notif_time(notif_time, pray_name, idx):
         remaining_time = str((notif_time - time_now.replace(tzinfo=None)).total_seconds()).split(".")[0]
         remaining_time = int(remaining_time)
         rem_time.config(text=" Notify me 10 minutes before " + pray_name + " " + convert(remaining_time))
-        print(" Timeleft before " + pray_name+ ": " + convert(remaining_time), end="\r")
         time_now_live(label_time_now)
         sleep(0.5)
         root.update()
-    notif_label.pack()
-    notif_label.config(text= pray_name + " comes in 10 minutes!!!")
+    n.show_toast("PrayerTimes", pray_name + " comes in 10 minutes", duration = 10,
+    icon_path ="E:/Prayerbeads.ico")
     for label in labels: label.destroy()
     if idx == 4:
         sleep_until_new_day()
@@ -186,14 +190,21 @@ def check_each_prayer(prayer_times_dict, ref_currtime):
             print(prayer_time)
             print(index)
             return prayer_name, prayer_time, index
+        else:
+            sleep_until_new_day()
+            return
+
+      
         
 
 
-# The timezone for the location where the prayers are observed
 
+n = ToastNotifier()
 timezone = pytz.timezone('Europe/Stockholm')  
 root = Tk()
-root.geometry("800x400")
+root.geometry("300x175")
 root.title("Prayer Times")
+img = PhotoImage(file="E:/Prayerbeads.png")
+root.wm_iconphoto(True, img)
 labels = []
 init()
