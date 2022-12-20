@@ -3,8 +3,12 @@ import pytz
 import requests
 from tkinter import *
 from tkinter import messagebox
+import json
 import time
+from timezonefinder import TimezoneFinder
 from time import sleep
+from ttkwidgets.autocomplete import AutocompleteCombobox
+from tkinter import *
 from win10toast import ToastNotifier
 
 
@@ -27,7 +31,7 @@ def prayer_times_today(prayer_times_dict):
     labels.append(today_prayer_time_ASR)
     labels.append(today_prayer_time_MAGHRIB)
     labels.append(today_prayer_time_ISHA)
-
+    
     today_prayer_time_FAJR.pack()
     today_prayer_time_DHUHR.pack()
     today_prayer_time_ASR.pack()
@@ -58,7 +62,6 @@ def sleep_until_new_day():
         remaining_time_twelve = int(remaining_time_twelve)
         rem_time_twelve.config(text=" Timeleft before 00:00 - " + convert(remaining_time_twelve))
         time_now_live(label_time_now)
-        sleep(0.5)
         root.update()
         stringed_time_now = time_now.strftime('%H:%M:%S')
   
@@ -82,7 +85,6 @@ def sleep_until_notif_time(notif_time, pray_name, idx):
         remaining_time = int(remaining_time)
         rem_time.config(text=" Notify me 10 minutes before " + pray_name + " " + convert(remaining_time))
         time_now_live(label_time_now)
-        sleep(0.5)
         root.update()
     n.show_toast("PrayerTimes", pray_name + " comes in 10 minutes", duration = 10,
     icon_path ="E:/Prayerbeads.ico")
@@ -135,7 +137,7 @@ def get_new_times():
     current_year = int(current_date.split("-")[2])
 
     # The URL of the website with the prayer times
-    prayer_times_url = f'http://api.aladhan.com/v1/calendar?latitude=56.16156&longitude=15.58661&method=3&month={current_month}&year={current_year}'
+    prayer_times_url = f'http://api.aladhan.com/v1/calendar?latitude={latitude}&longitude={longitude}&method={method}&month={current_month}&year={current_year}'
     prayer_times_dict = {}
 
     current_time_split = str(current_time).split(" ")
@@ -184,27 +186,123 @@ def check_each_prayer(prayer_times_dict, ref_currtime):
         print(prayertime_todate)
         diff = prayertime_todate - currtime_todate
         print("DIFFF: " + str(diff))
-        diff_int = int(str(diff).split(":")[1])
-        if not str(diff).startswith('-') and diff_int > 10:
+
+        if not str(diff).startswith('-'):
             print(prayer_name)
             print(prayer_time)
             print(index)
             return prayer_name, prayer_time, index
-        else:
+        if index == 4:
             sleep_until_new_day()
             return
 
       
-        
+
+def save_inputs():
+    global timezone
+    global latitude
+    global longitude
+    global method
+    method = choose_method.get()
+    city = choose_city.get() 
+    with open('cities.json') as f:    
+        data = json.load(f)
+        for i in range(len(data)):
+            if data[i]['name'] == city:
+                latitude = float(data[i]['lat'])
+                longitude = float(data[i]['lng'])
+    obj = TimezoneFinder()
+    timezone_result = obj.timezone_at(lat=latitude, lng=longitude)
+    timezone = pytz.timezone(timezone_result) 
+    method = methods_dict[method]
+    for label in labels: label.destroy()
+    init()
+    return
 
 
 
 n = ToastNotifier()
-timezone = pytz.timezone('Europe/Stockholm')  
+timezone = pytz.timezone('Europe/Stockholm') 
+method = "3"
+longitude = "18.06871"
+latitude = "59.32938"
 root = Tk()
-root.geometry("300x175")
+root.geometry("300x350")
 root.title("Prayer Times")
 img = PhotoImage(file="E:/Prayerbeads.png")
 root.wm_iconphoto(True, img)
 labels = []
+methods = ['University of Islamic Sciences, Karachi', #1
+            'Islamic Society of North America', #2
+            'Muslim World League', #3
+            'Umm Al-Qura University, Makkah', #4
+            'Egyptian General Authority of Survey', #5
+            'Institute of Geophysics, University of Tehran', #7
+            'Gulf Region', #8
+            'Kuwait', #9
+            'Qatar', #10
+            'Majlis Ugama Islam Singapura, Singapore', #11
+            'Union Organization islamic de France', #12
+            'Diyanet İşleri Başkanlığı, Turkey', #13
+            'Spiritual Administration of Muslims of Russia', #14
+            'Moonsighting Committee Worldwide (also requires shafaq paramteer)'] #15
+
+cities = []
+
+methods_dict = {
+            'University of Islamic Sciences, Karachi': 1,
+            'Islamic Society of North America': 2,
+            'Muslim World League': 3, 
+            'Umm Al-Qura University, Makkah': 4,
+            'Egyptian General Authority of Survey': 5,
+            'Institute of Geophysics, University of Tehran': 7,
+            'Gulf Region': 8,
+            'Kuwait': 9,
+            'Qatar': 10, 
+            'Majlis Ugama Islam Singapura, Singapore': 11, 
+            'Union Organization islamic de France': 12,
+            'Diyanet İşleri Başkanlığı, Turkey': 13,
+            'Spiritual Administration of Muslims of Russia': 14, 
+            'Moonsighting Committee Worldwide (also requires shafaq paramteer)': 15
+}
+
+
+with open('cities.json') as data_file:    
+    data = json.load(data_file)
+    for v in data:
+        cities.append(v["name"])
+
+
+var = StringVar(root)
+var2 = StringVar(root)
+
+method_label = Label(root, text ="Calculating method: ")
+choose_method = AutocompleteCombobox(
+    root, 
+    width=30, 
+    font=('Times', 15),
+    completevalues=methods
+    )
+method_label.pack()
+choose_method.pack()
+location_label = Label(root, text ="Location: ")
+choose_city = AutocompleteCombobox(
+    root, 
+    width=30, 
+    font=('Times', 15),
+    completevalues=cities
+    )
+location_label.pack()
+choose_city.pack()
+
+var.set('Muslim World League')
+var2.set('Stockholm')
+
+save_button = Button(root,
+                        text = "Save", 
+                        command = save_inputs)
+
+
+save_button.pack()
+
 init()
