@@ -120,7 +120,7 @@ def get_notification_time(prayer_name, prayer_time, index):
     else:
         notification_time = datetime.datetime.combine(
             datetime.date.today(), prayer_time
-        ) - datetime.timedelta(minutes=10)
+        ) - datetime.timedelta(minutes=notify_me)
         print("Prayer: " + str(prayer_name))
         print(" ")
         print("Notif time: "+ str(notification_time))
@@ -218,7 +218,12 @@ def save_inputs():
     global notify_me
     method = choose_method.get()
     city = choose_city.get() 
-    notify_me = int(choose_time_to_notif.get())
+    try:
+        notify_me = int(choose_time_to_notif.get())
+        time_to_notif_label.config(text="Notify me minutes bofore prayer: ")
+    except ValueError:
+        time_to_notif_label.config(text="Input integer please")
+        return
     with open('cities.json') as f:    
         data = json.load(f)
         for i in range(len(data)):
@@ -323,6 +328,7 @@ if __name__ == "__main__":
         font=('Times', 15),
         textvariable=field_time_to_notif
         )
+
     time_to_notif_label.pack()
     choose_time_to_notif.pack()
 
