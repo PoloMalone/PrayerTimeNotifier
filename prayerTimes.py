@@ -15,24 +15,28 @@ from win10toast import ToastNotifier
 def init():
     value1, value2 = get_new_times()
     pName, pTime, index = check_each_prayer(value1,value2)
-    timeleft = get_notification_time(pName,pTime)
+    timeleft = get_notification_time(pName,pTime,index)
     sleep_until_notif_time(timeleft,pName,index)
     root.mainloop()
 
 def prayer_times_today(prayer_times_dict):
+
     today_prayer_time_FAJR = Label(root, text ="Fajr: " + prayer_times_dict["Fajr"])
+    today_prayer_time_SUNRISE = Label(root, text = "Shuruq: " + prayer_times_dict["Sunrise"])
     today_prayer_time_DHUHR = Label(root, text ="Dhuhr: " + prayer_times_dict["Dhuhr"])
     today_prayer_time_ASR = Label(root, text ="Asr: " + prayer_times_dict["Asr"])
     today_prayer_time_MAGHRIB = Label(root, text ="Maghrib: " + prayer_times_dict["Maghrib"])
     today_prayer_time_ISHA = Label(root, text ="Isha: " + prayer_times_dict["Isha"])
 
     labels.append(today_prayer_time_FAJR)
+    labels.append(today_prayer_time_SUNRISE)
     labels.append(today_prayer_time_DHUHR)
     labels.append(today_prayer_time_ASR)
     labels.append(today_prayer_time_MAGHRIB)
     labels.append(today_prayer_time_ISHA)
     
     today_prayer_time_FAJR.pack()
+    today_prayer_time_SUNRISE.pack()
     today_prayer_time_DHUHR.pack()
     today_prayer_time_ASR.pack()
     today_prayer_time_MAGHRIB.pack()
@@ -43,7 +47,7 @@ def time_now_live(time):
     time_now_refined = time_now.replace(tzinfo=None)
     time_now_refined = str(time_now_refined).split(" ")
     time_now_refined = time_now_refined[1].split(".")[0]
-    time.config(text=" Time Now: " + str(time_now_refined))
+    time.config(text=" Time Now: " + str(time_now_refined), fg='#00FF00')
     return
 
 
@@ -64,7 +68,6 @@ def sleep_until_new_day():
         time_now_live(label_time_now)
         root.update()
         stringed_time_now = time_now.strftime('%H:%M:%S')
-  
         if stringed_time_now == deadline:
             for label in labels: label.destroy()
             break;
@@ -77,19 +80,21 @@ def sleep_until_notif_time(notif_time, pray_name, idx):
     label_time_now = Label(root, text= "Time now: ")
     labels.append(rem_time)
     labels.append(label_time_now)
-    label_time_now.pack()
     rem_time.pack()
+    label_time_now.pack()
+    if pray_name == "Sunrise":
+        pray_name = "Shuruq"
     while notif_time > datetime.datetime.now(timezone).replace(tzinfo=None):
         time_now = datetime.datetime.now(timezone)
         remaining_time = str((notif_time - time_now.replace(tzinfo=None)).total_seconds()).split(".")[0]
         remaining_time = int(remaining_time)
-        rem_time.config(text=" Notify me 10 minutes before " + pray_name + " " + convert(remaining_time))
+        rem_time.config(text=" Notify me " + str(notify_me) + " minutes before " + pray_name + " " + convert(remaining_time))
         time_now_live(label_time_now)
         root.update()
     n.show_toast("PrayerTimes", pray_name + " comes in 10 minutes", duration = 10,
     icon_path ="E:/Prayerbeads.ico")
     for label in labels: label.destroy()
-    if idx == 4:
+    if idx == 5:
         sleep_until_new_day()
     else:
         init()
@@ -105,21 +110,27 @@ def convert(seconds):
     return "%d:%02d:%02d" % (hour, minutes, seconds)
 
 
-def get_notification_time(prayer_name, prayer_time):
-    # Calculate the time 10 minutes before the prayer
-    notification_time = datetime.datetime.combine(
-        datetime.date.today(), prayer_time
-    ) - datetime.timedelta(minutes=10)
-    print("Prayer: " + str(prayer_name))
-    print(" ")
-    print("Notif time: "+ str(notification_time))
-    print(" ")
-    # Get the current time in the specified timezone
-    time_now = datetime.datetime.now(timezone).replace(tzinfo=None)
-    print("Timenow: " + str(time_now))
-    print(" ")
+def get_notification_time(prayer_name, prayer_time, index):
+    # Calculate the minutes before the prayer
+    if index == 0:
+        notification_time = datetime.datetime.combine(
+            datetime.date.today(), prayer_time 
+        ) - datetime.timedelta(minutes=notify_me) + datetime.timedelta(days=1)
+        return notification_time
+    else:
+        notification_time = datetime.datetime.combine(
+            datetime.date.today(), prayer_time
+        ) - datetime.timedelta(minutes=10)
+        print("Prayer: " + str(prayer_name))
+        print(" ")
+        print("Notif time: "+ str(notification_time))
+        print(" ")
+        # Get the current time in the specified timezone
+        time_now = datetime.datetime.now(timezone).replace(tzinfo=None)
+        print("Timenow: " + str(time_now))
+        print(" ")
     
-    return notification_time
+        return notification_time
 
 
 
@@ -152,8 +163,8 @@ def get_new_times():
     # Parse the response to get the prayer times
     prayer_times = response.json()
 
-    #print(prayer_times)
     prayer_times_dict["Fajr"] = (prayer_times["data"][current_day-1]["timings"]["Fajr"].split()[0])
+    prayer_times_dict["Sunrise"] = (prayer_times["data"][current_day-1]["timings"]["Sunrise"].split()[0])
     prayer_times_dict["Dhuhr"] = (prayer_times["data"][current_day-1]["timings"]["Dhuhr"].split()[0])
     prayer_times_dict["Asr"] = (prayer_times["data"][current_day-1]["timings"]["Asr"].split()[0])
     prayer_times_dict["Maghrib"] = (prayer_times["data"][current_day-1]["timings"]["Maghrib"].split()[0])
@@ -161,11 +172,12 @@ def get_new_times():
     
     # The names of the Islamic prayers
     print(prayer_times_dict)
+    print(refined_current_time)
     prayer_times_today(prayer_times_dict)
     return prayer_times_dict, refined_current_time
 
 def check_each_prayer(prayer_times_dict, ref_currtime):
-    # Send notifications for all of the prayers
+  
     for index, prayer_name in enumerate(prayer_times_dict):
         
         # Get the prayer time from the response
@@ -192,7 +204,7 @@ def check_each_prayer(prayer_times_dict, ref_currtime):
             print(prayer_time)
             print(index)
             return prayer_name, prayer_time, index
-        if index == 4:
+        if index == 5:
             sleep_until_new_day()
             return
 
@@ -203,8 +215,10 @@ def save_inputs():
     global latitude
     global longitude
     global method
+    global notify_me
     method = choose_method.get()
     city = choose_city.get() 
+    notify_me = int(choose_time_to_notif.get())
     with open('cities.json') as f:    
         data = json.load(f)
         for i in range(len(data)):
@@ -220,89 +234,104 @@ def save_inputs():
     return
 
 
+if __name__ == "__main__":
+    n = ToastNotifier()
+    img = PhotoImage(file="E:/Prayerbeads.png")
+    root.wm_iconphoto(True, img)
+    timezone = pytz.timezone('Europe/Stockholm') 
+    method = "3"
+    longitude = "18.063240"
+    latitude = "59.334591"
+    notify_me = 10
 
-n = ToastNotifier()
-timezone = pytz.timezone('Europe/Stockholm') 
-method = "3"
-longitude = "18.06871"
-latitude = "59.32938"
-root = Tk()
-root.geometry("300x350")
-root.title("Prayer Times")
-img = PhotoImage(file="E:/Prayerbeads.png")
-root.wm_iconphoto(True, img)
-labels = []
-methods = ['University of Islamic Sciences, Karachi', #1
-            'Islamic Society of North America', #2
-            'Muslim World League', #3
-            'Umm Al-Qura University, Makkah', #4
-            'Egyptian General Authority of Survey', #5
-            'Institute of Geophysics, University of Tehran', #7
-            'Gulf Region', #8
-            'Kuwait', #9
-            'Qatar', #10
-            'Majlis Ugama Islam Singapura, Singapore', #11
-            'Union Organization islamic de France', #12
-            'Diyanet İşleri Başkanlığı, Turkey', #13
-            'Spiritual Administration of Muslims of Russia', #14
-            'Moonsighting Committee Worldwide (also requires shafaq paramteer)'] #15
+    root = Tk()
+    root.geometry("300x400")
+    root.title("Prayer Times")
+    labels = []
+    methods = ['University of Islamic Sciences, Karachi', #1
+                'Islamic Society of North America', #2
+                'Muslim World League', #3
+                'Umm Al-Qura University, Makkah', #4
+                'Egyptian General Authority of Survey', #5
+                'Institute of Geophysics, University of Tehran', #7
+                'Gulf Region', #8
+                'Kuwait', #9
+                'Qatar', #10
+                'Majlis Ugama Islam Singapura, Singapore', #11
+                'Union Organization islamic de France', #12
+                'Diyanet İşleri Başkanlığı, Turkey', #13
+                'Spiritual Administration of Muslims of Russia', #14
+                'Moonsighting Committee Worldwide (also requires shafaq paramteer)'] #15
 
-cities = []
+    cities = []
 
-methods_dict = {
-            'University of Islamic Sciences, Karachi': 1,
-            'Islamic Society of North America': 2,
-            'Muslim World League': 3, 
-            'Umm Al-Qura University, Makkah': 4,
-            'Egyptian General Authority of Survey': 5,
-            'Institute of Geophysics, University of Tehran': 7,
-            'Gulf Region': 8,
-            'Kuwait': 9,
-            'Qatar': 10, 
-            'Majlis Ugama Islam Singapura, Singapore': 11, 
-            'Union Organization islamic de France': 12,
-            'Diyanet İşleri Başkanlığı, Turkey': 13,
-            'Spiritual Administration of Muslims of Russia': 14, 
-            'Moonsighting Committee Worldwide (also requires shafaq paramteer)': 15
-}
-
-
-with open('cities.json') as data_file:    
-    data = json.load(data_file)
-    for v in data:
-        cities.append(v["name"])
+    methods_dict = {
+                'University of Islamic Sciences, Karachi': 1,
+                'Islamic Society of North America': 2,
+                'Muslim World League': 3, 
+                'Umm Al-Qura University, Makkah': 4,
+                'Egyptian General Authority of Survey': 5,
+                'Institute of Geophysics, University of Tehran': 7,
+                'Gulf Region': 8,
+                'Kuwait': 9,
+                'Qatar': 10, 
+                'Majlis Ugama Islam Singapura, Singapore': 11, 
+                'Union Organization islamic de France': 12,
+                'Diyanet İşleri Başkanlığı, Turkey': 13,
+                'Spiritual Administration of Muslims of Russia': 14, 
+                'Moonsighting Committee Worldwide (also requires shafaq paramteer)': 15
+    }
 
 
-var = StringVar(root)
-var2 = StringVar(root)
-
-method_label = Label(root, text ="Calculating method: ")
-choose_method = AutocompleteCombobox(
-    root, 
-    width=30, 
-    font=('Times', 15),
-    completevalues=methods
-    )
-method_label.pack()
-choose_method.pack()
-location_label = Label(root, text ="Location: ")
-choose_city = AutocompleteCombobox(
-    root, 
-    width=30, 
-    font=('Times', 15),
-    completevalues=cities
-    )
-location_label.pack()
-choose_city.pack()
-
-var.set('Muslim World League')
-var2.set('Stockholm')
-
-save_button = Button(root,
-                        text = "Save", 
-                        command = save_inputs)
+    with open('cities.json') as data_file:    
+        data = json.load(data_file)
+        for v in data:
+            cities.append(v["name"])
 
 
-save_button.pack()
+    field_method = StringVar(root)
+    field_location = StringVar(root)
+    field_time_to_notif = StringVar(root)
+    field_method.set('Muslim World League')
+    field_location.set('Stockholm')
+    field_time_to_notif.set('10')
+    method_label = Label(root, text ="Calculating method: ")
+    choose_method = AutocompleteCombobox(
+        root, 
+        width=30, 
+        font=('Times', 15),
+        completevalues=methods,
+        textvariable=field_method
+        )
+    method_label.pack()
+    choose_method.pack()
+    location_label = Label(root, text ="Location: ")
+    choose_city = AutocompleteCombobox(
+        root, 
+        width=30, 
+        font=('Times', 15),
+        completevalues=cities,
+        textvariable=field_location
+        )
+    location_label.pack()
+    choose_city.pack()
 
-init()
+    time_to_notif_label = Label(root, text ="Notify me minutes bofore prayer: ")
+    choose_time_to_notif = Entry(
+        root, 
+        width=5, 
+        font=('Times', 15),
+        textvariable=field_time_to_notif
+        )
+    time_to_notif_label.pack()
+    choose_time_to_notif.pack()
+
+
+    save_button = Button(root,
+                            text = "Save", 
+                            command = save_inputs)
+
+
+    save_button.pack()
+
+    init()
