@@ -82,6 +82,9 @@ def sleep_until_notif_time(notif_time, pray_name, idx):
     labels.append(label_time_now)
     rem_time.pack()
     label_time_now.pack()
+    print("NOTIFFFF")
+    print(notif_time)
+    print("NORDDDD")
     if pray_name == "Sunrise":
         pray_name = "Shuruq"
     while notif_time > datetime.datetime.now(timezone).replace(tzinfo=None):
@@ -112,7 +115,11 @@ def convert(seconds):
 
 def get_notification_time(prayer_name, prayer_time, index):
     # Calculate the minutes before the prayer
-    if index == 0:
+    midnight = datetime.datetime.now(timezone).replace(hour=0, minute=0, second=0, microsecond=0).replace(tzinfo=None)
+
+    print("MIDNIGHT")
+    print(midnight)
+    if index == 0 and datetime.datetime.now(timezone).replace(tzinfo=None) < midnight :
         notification_time = datetime.datetime.combine(
             datetime.date.today(), prayer_time 
         ) - datetime.timedelta(minutes=notify_me) + datetime.timedelta(days=1)
