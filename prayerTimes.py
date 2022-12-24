@@ -9,7 +9,7 @@ from timezonefinder import TimezoneFinder
 from time import sleep
 from ttkwidgets.autocomplete import AutocompleteCombobox
 from tkinter import *
-from win10toast import ToastNotifier
+#from win10toast import ToastNotifier
 
 
 def init():
@@ -94,8 +94,8 @@ def sleep_until_notif_time(notif_time, pray_name, idx):
         rem_time.config(text=" Notify me " + str(notify_me) + " minutes before " + pray_name + " " + convert(remaining_time))
         time_now_live(label_time_now)
         root.update()
-    n.show_toast("PrayerTimes", pray_name + " comes in 10 minutes", duration = 10,
-    icon_path ="E:/Prayerbeads.ico")
+    #n.show_toast("PrayerTimes", pray_name + " comes in 10 minutes", duration = 10,
+    #icon_path ="E:/Prayerbeads.ico")
     for label in labels: label.destroy()
     if idx == 5:
         sleep_until_new_day()
@@ -119,19 +119,20 @@ def get_notification_time(prayer_name, prayer_time, index):
 
     print("MIDNIGHT")
     print(midnight)
+
     if index == 0 and datetime.datetime.now(timezone).replace(tzinfo=None) < midnight :
         notification_time = datetime.datetime.combine(
-            datetime.date.today(), prayer_time 
+            datetime.datetime.now(timezone).replace(tzinfo=None), prayer_time 
         ) - datetime.timedelta(minutes=notify_me) + datetime.timedelta(days=1)
         return notification_time
     else:
         notification_time = datetime.datetime.combine(
-            datetime.date.today(), prayer_time
+            datetime.datetime.now(timezone).replace(tzinfo=None), prayer_time
         ) - datetime.timedelta(minutes=notify_me)
         print("Prayer: " + str(prayer_name))
         print(" ")
         print("Notif time: "+ str(notification_time))
-        print(" ")
+        print(" XDDDDD")
         # Get the current time in the specified timezone
         time_now = datetime.datetime.now(timezone).replace(tzinfo=None)
         print("Timenow: " + str(time_now))
@@ -227,7 +228,7 @@ def save_inputs():
     city = choose_city.get() 
     try:
         notify_me = int(choose_time_to_notif.get())
-        time_to_notif_label.config(text="Notify me minutes bofore prayer: ")
+        time_to_notif_label.config(text="Notify me minutes before prayer: ")
     except ValueError:
         time_to_notif_label.config(text="Input integer please")
         return
@@ -247,9 +248,9 @@ def save_inputs():
 
 
 if __name__ == "__main__":
-    n = ToastNotifier()
-    img = PhotoImage(file="E:/Prayerbeads.png")
-    root.wm_iconphoto(True, img)
+    #n = ToastNotifier()
+    #img = PhotoImage(file="E:/Prayerbeads.png")
+    #root.wm_iconphoto(True, img)
     timezone = pytz.timezone('Europe/Stockholm') 
     method = "3"
     longitude = "18.063240"
