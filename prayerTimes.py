@@ -9,7 +9,7 @@ from timezonefinder import TimezoneFinder
 from time import sleep
 from ttkwidgets.autocomplete import AutocompleteCombobox
 from tkinter import *
-#from win10toast import ToastNotifier
+from win10toast import ToastNotifier
 
 
 def init():
@@ -82,9 +82,6 @@ def sleep_until_notif_time(notif_time, pray_name, idx):
     labels.append(label_time_now)
     rem_time.pack()
     label_time_now.pack()
-    print("NOTIFFFF")
-    print(notif_time)
-    print("NORDDDD")
     if pray_name == "Sunrise":
         pray_name = "Shuruq"
     while notif_time > datetime.datetime.now(timezone).replace(tzinfo=None):
@@ -94,8 +91,8 @@ def sleep_until_notif_time(notif_time, pray_name, idx):
         rem_time.config(text=" Notify me " + str(notify_me) + " minutes before " + pray_name + " " + convert(remaining_time))
         time_now_live(label_time_now)
         root.update()
-    #n.show_toast("PrayerTimes", pray_name + " comes in 10 minutes", duration = 10,
-    #icon_path ="E:/Prayerbeads.ico")
+    n.show_toast("PrayerTimes", pray_name + " comes in 10 minutes", duration = 10,
+    icon_path ="E:/Prayerbeads.ico")
     for label in labels: label.destroy()
     if idx == 5:
         sleep_until_new_day()
@@ -117,9 +114,6 @@ def get_notification_time(prayer_name, prayer_time, index):
     # Calculate the minutes before the prayer
     midnight = datetime.datetime.now(timezone).replace(hour=0, minute=0, second=0, microsecond=0).replace(tzinfo=None)
 
-    print("MIDNIGHT")
-    print(midnight)
-
     if index == 0 and datetime.datetime.now(timezone).replace(tzinfo=None) < midnight :
         notification_time = datetime.datetime.combine(
             datetime.datetime.now(timezone).replace(tzinfo=None), prayer_time 
@@ -132,7 +126,6 @@ def get_notification_time(prayer_name, prayer_time, index):
         print("Prayer: " + str(prayer_name))
         print(" ")
         print("Notif time: "+ str(notification_time))
-        print(" XDDDDD")
         # Get the current time in the specified timezone
         time_now = datetime.datetime.now(timezone).replace(tzinfo=None)
         print("Timenow: " + str(time_now))
@@ -162,11 +155,9 @@ def get_new_times():
     current_time_split = str(current_time).split(" ")
     refined_current_time = current_time_split[1].split(".")[0]
     print("refined TIME: " + str(refined_current_time))
-    print(" ")
 
     # Send a request to the website to get the prayer times
     response = requests.get(prayer_times_url)
-
 
     # Parse the response to get the prayer times
     prayer_times = response.json()
@@ -205,9 +196,8 @@ def check_each_prayer(prayer_times_dict, ref_currtime):
         )
         print(prayertime_todate)
         diff = prayertime_todate - currtime_todate
-        print("DIFFF: " + str(diff))
-
-        if not str(diff).startswith('-'):
+  
+        if not str(diff).startswith('-') and int(diff.total_seconds()) > (notify_me*60):
             print(prayer_name)
             print(prayer_time)
             print(index)
@@ -238,6 +228,7 @@ def save_inputs():
             if data[i]['name'] == city:
                 latitude = float(data[i]['lat'])
                 longitude = float(data[i]['lng'])
+        f.close()
     obj = TimezoneFinder()
     timezone_result = obj.timezone_at(lat=latitude, lng=longitude)
     timezone = pytz.timezone(timezone_result) 
@@ -248,9 +239,9 @@ def save_inputs():
 
 
 if __name__ == "__main__":
-    #n = ToastNotifier()
-    #img = PhotoImage(file="E:/Prayerbeads.png")
-    #root.wm_iconphoto(True, img)
+    n = ToastNotifier()
+    img = PhotoImage(file="E:/Prayerbeads.png")
+    root.wm_iconphoto(True, img)
     timezone = pytz.timezone('Europe/Stockholm') 
     method = "3"
     longitude = "18.063240"
@@ -300,6 +291,7 @@ if __name__ == "__main__":
         data = json.load(data_file)
         for v in data:
             cities.append(v["name"])
+        data_file.close()
 
 
     field_method = StringVar(root)
@@ -318,7 +310,7 @@ if __name__ == "__main__":
         )
     method_label.pack()
     choose_method.pack()
-    location_label = Label(root, text ="Location: ")
+    location_label = Label(root, text ="Location(city): ")
     choose_city = AutocompleteCombobox(
         root, 
         width=30, 
