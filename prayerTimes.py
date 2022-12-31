@@ -4,17 +4,15 @@ import requests
 from tkinter import *
 from tkinter import messagebox
 import json
-import time
 from timezonefinder import TimezoneFinder
 from time import sleep
 from ttkwidgets.autocomplete import AutocompleteCombobox
-from tkinter import *
 from win10toast import ToastNotifier
 
 
 def init():
-    value1, value2 = get_new_times()
-    pName, pTime, index = check_each_prayer(value1,value2)
+    prayer_times_dict, refined_time = get_new_times()
+    pName, pTime, index = check_each_prayer(prayer_times_dict,refined_time)
     timeleft = get_notification_time(pName,pTime,index)
     sleep_until_notif_time(timeleft,pName,index)
     root.mainloop()
@@ -91,7 +89,7 @@ def sleep_until_notif_time(notif_time, pray_name, idx):
         rem_time.config(text=" Notify me " + str(notify_me) + " minutes before " + pray_name + " " + convert(remaining_time))
         time_now_live(label_time_now)
         root.update()
-    n.show_toast("PrayerTimes", pray_name + " comes in 10 minutes", duration = 10,
+    n.show_toast("PrayerTimes", pray_name + " comes in " + str(notify_me) +  " minutes", duration = 10,
     icon_path ="E:/Prayerbeads.ico")
     for label in labels: label.destroy()
     if idx == 5:
@@ -341,3 +339,4 @@ if __name__ == "__main__":
     save_button.pack()
 
     init()
+
