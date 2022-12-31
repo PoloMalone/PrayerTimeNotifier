@@ -5,7 +5,6 @@ from tkinter import *
 from tkinter import messagebox
 import json
 from timezonefinder import TimezoneFinder
-from time import sleep
 from ttkwidgets.autocomplete import AutocompleteCombobox
 from win10toast import ToastNotifier
 
@@ -45,7 +44,7 @@ def time_now_live(time):
     time_now_refined = time_now.replace(tzinfo=None)
     time_now_refined = str(time_now_refined).split(" ")
     time_now_refined = time_now_refined[1].split(".")[0]
-    time.config(text=" Time Now: " + str(time_now_refined), fg='#00FF00')
+    time.config(text=" Time Now: " + str(time_now_refined), fg='RED')
     return
 
 
@@ -90,7 +89,7 @@ def sleep_until_notif_time(notif_time, pray_name, idx):
         time_now_live(label_time_now)
         root.update()
     n.show_toast("PrayerTimes", pray_name + " comes in " + str(notify_me) +  " minutes", duration = 10,
-    icon_path ="E:/Prayerbeads.ico")
+    icon_path ="C:\PrayerTimeNotifier/Prayerbeads.ico")
     for label in labels: label.destroy()
     if idx == 5:
         sleep_until_new_day()
@@ -220,13 +219,13 @@ def save_inputs():
     except ValueError:
         time_to_notif_label.config(text="Input integer please")
         return
-    with open('cities.json') as f:    
-        data = json.load(f)
-        for i in range(len(data)):
-            if data[i]['name'] == city:
-                latitude = float(data[i]['lat'])
-                longitude = float(data[i]['lng'])
-        f.close()
+
+
+    for i in range(len(data)):
+        if data[i]['name'] == city:
+            latitude = float(data[i]['lat'])
+            longitude = float(data[i]['lng'])
+
     obj = TimezoneFinder()
     timezone_result = obj.timezone_at(lat=latitude, lng=longitude)
     timezone = pytz.timezone(timezone_result) 
@@ -237,18 +236,20 @@ def save_inputs():
 
 
 if __name__ == "__main__":
+    root = Tk()
+    global data
     n = ToastNotifier()
     img = PhotoImage(file="E:/Prayerbeads.png")
+    root.geometry("300x400")
+    root.title("Prayer Times")
     root.wm_iconphoto(True, img)
+    
     timezone = pytz.timezone('Europe/Stockholm') 
     method = "3"
     longitude = "18.063240"
     latitude = "59.334591"
     notify_me = 10
 
-    root = Tk()
-    root.geometry("300x400")
-    root.title("Prayer Times")
     labels = []
     methods = ['University of Islamic Sciences, Karachi', #1
                 'Islamic Society of North America', #2
@@ -285,11 +286,11 @@ if __name__ == "__main__":
     }
 
 
-    with open('cities.json') as data_file:    
-        data = json.load(data_file)
-        for v in data:
-            cities.append(v["name"])
-        data_file.close()
+    data_file =  open('cities.json', encoding="utf8")   
+    data = json.load(data_file)
+    for v in data:
+        cities.append(v["name"])
+    data_file.close()
 
 
     field_method = StringVar(root)
@@ -319,7 +320,7 @@ if __name__ == "__main__":
     location_label.pack()
     choose_city.pack()
 
-    time_to_notif_label = Label(root, text ="Notify me minutes bofore prayer: ")
+    time_to_notif_label = Label(root, text ="Notify me minutes before prayer: ")
     choose_time_to_notif = Entry(
         root, 
         width=5, 
