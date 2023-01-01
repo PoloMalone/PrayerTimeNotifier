@@ -13,7 +13,7 @@ import os
 
 def notif(pray_name):
     n.show_toast("PrayerTimes", pray_name + " comes in " + str(notify_me) +  " minutes", duration = None, threaded=True,
-    icon_path ="C:\PrayerTimeNotifier/Prayerbeads.ico")
+    icon_path = os.getcwd() + "/Prayerbeads.ico")
 
 
 
@@ -251,7 +251,6 @@ if __name__ == "__main__":
     
     global data
   
-    print(os.getcwd())
     root = Tk()
     n = ToastNotifier()
     img = PhotoImage(file=os.getcwd() + "/Prayerbeads.png")
