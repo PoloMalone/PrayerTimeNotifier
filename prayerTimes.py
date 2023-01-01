@@ -6,6 +6,7 @@ from tkinter import messagebox
 import json
 from timezonefinder import TimezoneFinder
 from ttkwidgets.autocomplete import AutocompleteCombobox
+from time import sleep
 from win10toast import ToastNotifier
 
 
@@ -14,7 +15,7 @@ def init():
     pName, pTime, index = check_each_prayer(prayer_times_dict,refined_time)
     timeleft = get_notification_time(pName,pTime,index)
     sleep_until_notif_time(timeleft,pName,index)
-    root.mainloop()
+    
 
 def prayer_times_today(prayer_times_dict):
 
@@ -64,6 +65,7 @@ def sleep_until_new_day():
         rem_time_twelve.config(text=" Timeleft before 00:00 - " + convert(remaining_time_twelve))
         time_now_live(label_time_now)
         root.update()
+        sleep(1)
         stringed_time_now = time_now.strftime('%H:%M:%S')
         if stringed_time_now == deadline:
             for label in labels: label.destroy()
@@ -88,6 +90,7 @@ def sleep_until_notif_time(notif_time, pray_name, idx):
         rem_time.config(text=" Notify me " + str(notify_me) + " minutes before " + pray_name + " " + convert(remaining_time))
         time_now_live(label_time_now)
         root.update()
+        sleep(1)
     n.show_toast("PrayerTimes", pray_name + " comes in " + str(notify_me) +  " minutes", duration = 10,
     icon_path ="C:\PrayerTimeNotifier/Prayerbeads.ico")
     for label in labels: label.destroy()
@@ -235,9 +238,13 @@ def save_inputs():
     return
 
 
+ 
+
 if __name__ == "__main__":
-    root = Tk()
+    
     global data
+    
+    root = Tk()
     n = ToastNotifier()
     img = PhotoImage(file="E:/Prayerbeads.png")
     root.geometry("300x400")
@@ -293,6 +300,7 @@ if __name__ == "__main__":
     data_file.close()
 
 
+
     field_method = StringVar(root)
     field_location = StringVar(root)
     field_time_to_notif = StringVar(root)
@@ -338,6 +346,9 @@ if __name__ == "__main__":
 
 
     save_button.pack()
-
+    
+    
     init()
+    root.mainloop()
+
 
