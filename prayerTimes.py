@@ -10,12 +10,18 @@ from time import sleep
 from win10toast import ToastNotifier
 
 
+def notif(pray_name):
+    n.show_toast("PrayerTimes", pray_name + " comes in " + str(notify_me) +  " minutes", duration = 10, threaded=True,
+    icon_path ="C:\PrayerTimeNotifier/Prayerbeads.ico")
+
+
+
 def init():
     prayer_times_dict, refined_time = get_new_times()
     pName, pTime, index = check_each_prayer(prayer_times_dict,refined_time)
     timeleft = get_notification_time(pName,pTime,index)
     sleep_until_notif_time(timeleft,pName,index)
-    
+    root.mainloop()
 
 def prayer_times_today(prayer_times_dict):
 
@@ -65,7 +71,7 @@ def sleep_until_new_day():
         rem_time_twelve.config(text=" Timeleft before 00:00 - " + convert(remaining_time_twelve))
         time_now_live(label_time_now)
         root.update()
-        sleep(1)
+        sleep(0.1)
         stringed_time_now = time_now.strftime('%H:%M:%S')
         if stringed_time_now == deadline:
             for label in labels: label.destroy()
@@ -90,13 +96,13 @@ def sleep_until_notif_time(notif_time, pray_name, idx):
         rem_time.config(text=" Notify me " + str(notify_me) + " minutes before " + pray_name + " " + convert(remaining_time))
         time_now_live(label_time_now)
         root.update()
-        sleep(1)
-    n.show_toast("PrayerTimes", pray_name + " comes in " + str(notify_me) +  " minutes", duration = 10,
-    icon_path ="C:\PrayerTimeNotifier/Prayerbeads.ico")
+        sleep(0.1)
+    notif(pray_name)
     for label in labels: label.destroy()
     if idx == 5:
         sleep_until_new_day()
     else:
+        print("INNE ELSEEEEEE")
         init()
     return
 
@@ -349,6 +355,6 @@ if __name__ == "__main__":
     
     
     init()
-    root.mainloop()
+    
 
 
