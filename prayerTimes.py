@@ -8,6 +8,7 @@ from timezonefinder import TimezoneFinder
 from ttkwidgets.autocomplete import AutocompleteCombobox
 from time import sleep
 from win10toast import ToastNotifier
+import os
 
 
 def notif(pray_name):
@@ -249,10 +250,11 @@ def save_inputs():
 if __name__ == "__main__":
     
     global data
-    
+  
+    print(os.getcwd())
     root = Tk()
     n = ToastNotifier()
-    img = PhotoImage(file="E:/Prayerbeads.png")
+    img = PhotoImage(file=os.getcwd() + "/Prayerbeads.png")
     root.geometry("300x400")
     root.title("Prayer Times")
     root.wm_iconphoto(True, img)
