@@ -11,7 +11,7 @@ from win10toast import ToastNotifier
 
 
 def notif(pray_name):
-    n.show_toast("PrayerTimes", pray_name + " comes in " + str(notify_me) +  " minutes", duration = 10, threaded=True,
+    n.show_toast("PrayerTimes", pray_name + " comes in " + str(notify_me) +  " minutes", duration = None, threaded=True,
     icon_path ="C:\PrayerTimeNotifier/Prayerbeads.ico")
 
 
