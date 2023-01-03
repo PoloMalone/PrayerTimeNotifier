@@ -13,7 +13,8 @@ before an islamic prayer is due.
 ## Installation
 
 Step 1: Download "prayer.times.exe" from releases in this repo.
-  [Releases](https://github.com/PoloMalone/PrayerTimeNotifier/releases)
+[Releases](https://github.com/PoloMalone/PrayerTimeNotifier/releases)
+
 Step 2: Install release file
 
 Step 3: Go to "Prayer Times" Directory and run "Prayer Times" Application
