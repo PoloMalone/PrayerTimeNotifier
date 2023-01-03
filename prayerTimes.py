@@ -6,9 +6,12 @@ from tkinter import messagebox
 import json
 from timezonefinder import TimezoneFinder
 from ttkwidgets.autocomplete import AutocompleteCombobox
+from tkinter import ttk
 from time import sleep
 from win10toast import ToastNotifier
 import os
+from tkinter import *
+from geopy.geocoders import Nominatim
 
 #toast notifier
 def notif(pray_name):
@@ -154,6 +157,68 @@ def check_each_prayer(prayer_times_dict, ref_currtime):
             sleep_until_new_day()
             return
 
+#when user clicks "save" update values and call init in advanced 
+def save_advanced_inputs(chosen_meth, chosen_lat, chosen_long, chosen_time):
+    global data
+    global timezone
+    global latitude
+    global longitude
+    global method
+    global notify_me
+    lat_rangeX = -90
+    lat_rangeY = 90
+    lng_rangeX = -180
+    lng_rangeY = 180
+
+    if chosen_meth not in methods:
+        error_method()
+        return
+
+    try:
+        latitude = float(chosen_lat)
+        longitude = float(chosen_long)
+    except ValueError:
+        error_int()
+        return
+
+    tmp_lat = str(latitude).split('.')[0]
+    tmp_lng = str(longitude).split('.')[0]
+    tmp_lat = int(tmp_lat)
+    tmp_lng = int(tmp_lng)
+
+    if tmp_lat < lat_rangeX or tmp_lat > lat_rangeY:
+        error_latlong()
+        return
+    elif tmp_lng < lng_rangeX or tmp_lng > lng_rangeY:
+        error_latlong()
+        return
+
+    try:
+        notify_me = int(chosen_time)
+    except ValueError:
+        error_int()
+        return
+
+    obj = TimezoneFinder()
+    timezone_result = obj.timezone_at(lat=latitude, lng=longitude)
+    timezone = pytz.timezone(timezone_result) 
+    method = methods_dict[chosen_meth]
+    geolocator = Nominatim(user_agent="prayertimes")
+    coordinates = str(latitude) + ', ' + str(longitude)
+    location = geolocator.reverse(coordinates)
+    try:
+        address = location.raw['address']
+        city_to_print = address.get('city', '')
+        field_location.set(city_to_print)
+        if city_to_print == "":
+            field_location.set('Unknown city')
+    except:
+        field_location.set('Unknown city')
+    field_method.set(chosen_meth)
+    field_time_to_notif.set(notify_me)
+    init()
+
+
 #when user clicks "save" update values and call init
 def save_inputs():
     global data
@@ -164,11 +229,14 @@ def save_inputs():
     global notify_me
     method = choose_method.get()
     city = choose_city.get() 
+
+    if method not in methods:
+        error_method()
+        return
     try:
         notify_me = int(choose_time_to_notif.get())
-        time_to_notif_label.config(text="Notify me minutes before prayer: ")
     except ValueError:
-        time_to_notif_label.config(text="Input integer please")
+        error_int()
         return
 
     for i in range(len(data)):
@@ -187,7 +255,22 @@ def save_inputs():
 def on_closing():
     if messagebox.askokcancel("Quit", "Do you want to quit?"):
         root.destroy()
-       
+#error messages
+def error_latlong():
+    messagebox.showwarning(title=None, message="Please use valid coordinates")
+def error_method():
+    messagebox.showwarning(title=None, message="Please choose valid method")
+def error_int():
+    messagebox.showwarning(title=None, message="Please input integers")
+
+#close toplevel and call save func
+def close_and_call_save(chosen_meth, chosen_lat, chosen_long, chosen_time, win):
+    close_win(win)
+    save_advanced_inputs(chosen_meth, chosen_lat, chosen_long, chosen_time)
+def close_win(win):
+    win.destroy()
+
+    
 #pack all labels
 def pack_labels():
     method_label.pack()
@@ -196,6 +279,7 @@ def pack_labels():
     choose_city.pack()
     time_to_notif_label.pack()
     choose_time_to_notif.pack()
+    button_bonus.pack()
     save_button.pack()
     today_prayer_time_FAJR.pack()
     today_prayer_time_SUNRISE.pack()
@@ -212,6 +296,60 @@ def pack_labels():
                     rely = 1.0,
                     anchor ='se')
 
+#inputs of advanced page
+def advanced_input():
+    win = tk.Toplevel()
+    win.wm_title("Advanced Input")
+    win.geometry("200x270")
+    root.eval(f'tk::PlaceWindow {str(win)} center')
+
+    Calculating_method_label_win = tk.Label(win, text ="Calculating Method: ")
+    notify_time_label_win = tk.Label(win, text ="Notify me minutes before prayer: ")
+    latitude_label_win = tk.Label(win, text ="Latitude: ")
+    longitude_label_win = tk.Label(win, text ="Longitude: ")
+  
+
+    choose_method_win = AutocompleteCombobox(
+        win, 
+        width=30, 
+        font=('Times', 15),
+        completevalues=methods,
+        )
+
+    choose_latitude_win = tk.Entry(
+        win, 
+        width=10, 
+        font=('Times', 20)
+        )
+    
+    choose_longitude_win = tk.Entry(
+        win, 
+        width=10, 
+        font=('Times', 20)
+        )
+
+    choose_time_to_notif_win = tk.Entry(
+        win, 
+        width=5, 
+        font=('Times', 15),
+        )
+
+    save_advanced_button_win = ttk.Button(win, text="Save", command=lambda: close_and_call_save(choose_method_win.get(),
+                                                                                                choose_latitude_win.get(),
+                                                                                                choose_longitude_win.get(),
+                                                                                                choose_time_to_notif_win.get(),
+                                                                                                win
+                                                                                                ))
+
+    Calculating_method_label_win.pack()
+    choose_method_win.pack()
+    latitude_label_win.pack()
+    choose_latitude_win.pack()
+    longitude_label_win.pack()
+    choose_longitude_win.pack()
+    notify_time_label_win.pack()
+    choose_time_to_notif_win.pack()
+    save_advanced_button_win.pack()
 
 if __name__ == "__main__":
     
@@ -306,7 +444,7 @@ if __name__ == "__main__":
         textvariable=field_time_to_notif
         )
 
-    save_button = tk.Button(root,
+    save_button = ttk.Button(root,
                             text = "Save", 
                             command = save_inputs)
 
@@ -320,7 +458,9 @@ if __name__ == "__main__":
 
     rem_time = tk.Label(root, text="")
     label_time_now = tk.Label(root, text= "")
-  
+
+    button_bonus = ttk.Button(root, text="Advanced Input", command=advanced_input)
+    
     signature = tk.Label(root, text="Made by Polo 2023-01-01", font=('Times', 8))
     version = tk.Label(root, text="v 1.2.0.3",font=('Times', 8))
 
