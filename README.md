@@ -5,7 +5,7 @@ before an islamic prayer is due.
 
 ## Requirements
 * Windows 10 or higher
-* Make sure that "Get notifications from apps and other senders" is on in windows Settings->Notifications & Actions
+* Make sure that "Get notifications from apps and other senders" is ON in windows Settings->Notifications & Actions
 
 ![Settings](https://user-images.githubusercontent.com/57298459/210359508-6f148ed9-c713-455d-b29d-4f992b597b8c.PNG)
 
