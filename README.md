@@ -17,7 +17,7 @@ Step 3: Go to "Prayer Times" Directory and run "Prayer Times" Application
 ## Requirements
 
 * Make sure that "Get notifications from apps and other senders" is on in windows Settings->Notifications & Actions
-![alt text]([http://url/to/img.png](https://i.postimg.cc/VLM9Fntk/Settings.png))
+![alt text]((https://user-images.githubusercontent.com/57298459/210359508-6f148ed9-c713-455d-b29d-4f992b597b8c.PNG))
 
 * Windows 10 or higher
 
