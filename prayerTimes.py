@@ -10,7 +10,6 @@ from time import sleep
 from win10toast import ToastNotifier
 import os
 
-
 #toast notifier
 def notif(pray_name):
     n.show_toast("PrayerTimes", pray_name + " comes in " + str(notify_me) +  " minutes", duration = None, threaded=True,
@@ -268,13 +267,13 @@ if __name__ == "__main__":
     }
 
     #get json data
-    data_file =  open('cities.json', encoding="utf8")   
+    data_file =  open('cities.json', encoding="utf8")
     data = json.load(data_file)
     for v in data:
         cities.append(v["name"])
     data_file.close()
 
-    #Labels definitions
+    #Labels definitionspip install allcities
     field_method = tk.StringVar(root)
     field_location = tk.StringVar(root)
     field_time_to_notif = tk.StringVar(root)
@@ -298,7 +297,7 @@ if __name__ == "__main__":
         completevalues=cities,
         textvariable=field_location
         )
-    
+   
     time_to_notif_label = tk.Label(root, text ="Notify me minutes before prayer: ")
     choose_time_to_notif = tk.Entry(
         root, 
