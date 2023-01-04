@@ -6,6 +6,7 @@ from tkinter import messagebox
 import json
 from timezonefinder import TimezoneFinder
 from ttkwidgets.autocomplete import AutocompleteCombobox
+from ttkwidgets.autocomplete import AutocompleteEntry
 from tkinter import ttk
 from time import sleep
 from win10toast import ToastNotifier
@@ -428,7 +429,7 @@ if __name__ == "__main__":
         )
 
     location_label = tk.Label(root, text ="Location(city): ")
-    choose_city = AutocompleteCombobox(
+    choose_city = AutocompleteEntry(
         root, 
         width=30, 
         font=('Times', 15),
